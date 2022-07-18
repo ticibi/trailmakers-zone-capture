@@ -395,6 +395,12 @@ function SetValue(playerId, key, text)
     tm.playerUI.SetUIValue(playerId, key, text)
 end
 
+function Broadcast(key, value)
+    for i, player in ipairs(tm.players.CurrentPlayers()) do
+        SetValue(player.playerId, key, value)
+    end
+end
+
 function Clear(playerId)
     tm.playerUI.ClearUI(playerId)
 end
@@ -613,9 +619,9 @@ function MatchPage(playerId)
     Label(playerId, "status3", "hold zone +"..(MatchData.pointsPerSecond * 8).." pts/second")
     if debug then
         Button(0, "switch teams", "switch teams", OnSwitchTeams)
-        --for i, zone in ipairs(MatchData.zones) do
-        --    Label(0, "debug zone #"..zone.id, "Zone "..zone.id.." - ".."0 : 0")
-        --end
+        for i, zone in ipairs(MatchData.zones) do
+            Label(0, "debug zone #"..zone.id, "Zone "..zone.id.." - ".."0 : 0")
+        end
     end
 end
 
@@ -626,7 +632,7 @@ function OnSwitchTeams(callback)
     else
         playerData.team = playerData.team + 1
     end
-    SetValue(callback.playerId, "banner", "You are on Team #"..playerData.team)
+    SetValue(callback.playerId, "banner", "You are on Team "..playerData.team)
 end
 
 function AssignTeams()
@@ -697,12 +703,6 @@ function CheckAllPlayersReady()
         end
     end
     return true
-end
-
-function Broadcast(key, value)
-    for i, player in ipairs(tm.players.CurrentPlayers()) do
-        SetValue(player.playerId, key, value)
-    end
 end
 
 function OnStartMatch(callback)
