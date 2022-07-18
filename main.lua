@@ -139,6 +139,8 @@ function CaptureZone(zone, rate)
     local teamCount = CheckTeamCount(zone)
     if #teamCount > 1 then
         zone.contested = true
+    else
+        zone.contested = false
     end
     for i, playerId in ipairs(zone.players) do
         local playerData = playerDataTable[playerId]
