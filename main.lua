@@ -563,7 +563,9 @@ end
 function SetZoneScale(zoneId, scale)
     for i, zone in ipairs(MatchData.zones) do
         if tonumber(zone.id) == tonumber(zoneId) then
-            zone.object.GetTransform().SetScale(scale)
+            if isObjectValid(zone.object) then
+                zone.object.GetTransform().SetScale(scale)
+            end
         end
     end
 end
@@ -587,9 +589,10 @@ function MoveZone(callback)
     local pos = tm.vector3.op_Addition(playerPos, offset)
     local zoneId = tonumber(string.slice(callback.id, 5))
     local zone = GetZoneById(zoneId)
-    if zone ~= nil then
-        UpdateZonePosition(zone, pos)
+    if zone == nil then
+        return
     end
+    UpdateZonePosition(zone, pos)
 end
 
 function GetZoneById(zoneId)
@@ -600,28 +603,40 @@ function GetZoneById(zoneId)
     end
 end
 
+function ZoneWidget(playerId)
+    for i, zone in ipairs(MatchData.zones) do
+        Label(playerId, "zone"..zone.id, "Zone "..zone.id.." Uncontrolled")
+    end
+end
+
+function TeamWidget(playerId)
+    for i, team in ipairs(MatchData.teams) do
+        Label(playerId, "team"..team.id, "Team "..team.id.." "..team.score.." pts")
+    end
+end
+
+function DebugZoneWidget(playerId)
+    for i, zone in ipairs(MatchData.zones) do
+        Label(0, "debug zone #"..zone.id, "Zone "..zone.id.." - ".."0 : 0")
+    end
+end
+
 function MatchPage(playerId)
     local playerData = playerDataTable[playerId]
     Clear(playerId)
     Label(playerId, "banner", "You are on Team #"..playerData.team)
     Label(playerId, "match time", MatchData.matchTimer.."s remaining")
     Divider(playerId)
-    for i, zone in ipairs(MatchData.zones) do
-        Label(playerId, "zone"..zone.id, "Zone "..zone.id.." Uncontrolled")
-    end
+    ZoneWidget(playerId)
     Divider(playerId)
-    for i, team in ipairs(MatchData.teams) do
-        Label(playerId, "team"..team.id, "Team "..team.id.." "..team.score.." pts")
-    end
+    TeamWidget(playerId)
     Divider(playerId)
     Label(playerId, "status1", "repair vehicle -"..MatchData.repairPenalty.." pts")
     Label(playerId, "status2", "capture +"..MatchData.pointsPerCapture.." pts")
     Label(playerId, "status3", "hold zone +"..(MatchData.pointsPerSecond * 8).." pts/second")
     if debug then
         Button(0, "switch teams", "switch teams", OnSwitchTeams)
-        for i, zone in ipairs(MatchData.zones) do
-            Label(0, "debug zone #"..zone.id, "Zone "..zone.id.." - ".."0 : 0")
-        end
+        DebugZoneWidget(0)
     end
 end
 
@@ -765,15 +780,12 @@ function CreateRandomizedVector(limitX, limitY, limitZ, value)
     )
 end
 
-function isEmpty(list)
-    return #list < 1
+function isEmpty(_table)
+    return _table == {} or #_table < 1
 end
 
 function isFileValid(file)
-    if file == nil or file == '' then
-        return false
-    end
-    return true
+    return file ~= nil and file ~= ""
 end
 
 function isObjectValid(object)
@@ -809,6 +821,9 @@ end
 
 -- returns index of item
 function table.index(_table, _item)
+    if _table == nil or _table == {} then
+        return
+    end
     for i, v in ipairs(_table) do
         if _item == v then
             return i
@@ -818,6 +833,9 @@ end
 
 -- removes item from table if it exists
 function table.pop(_table, _item)
+    if _table == nil or _table == {} then
+        return
+    end
     if not table.contains(_table, _item) then return end
     for i, v in ipairs(_table) do
         if _item == v then
@@ -828,6 +846,9 @@ end
 
 -- checks if item is in table
 function table.contains(_table, _item)
+    if _table == nil or _table == {} then
+        return
+    end
     for _, v in ipairs(_table) do
         if _item == v then
             return true
@@ -838,9 +859,14 @@ end
 
 -- overwrites item in table if item already exists, or appends item
 function table.overwrite(_table, _item)
+    if _table == nil or _table == {} then
+        return
+    end
     if table.contains(_table, _item) then
         local index = table.index(_table, _item)
-        _table[index] = _item
+        if index ~= nil then
+            _table[index] = _item
+        end
     else
         table.insert(_table, _item)
     end
@@ -848,6 +874,9 @@ end
 
 -- returns a reversed copy of a table
 function table.reversed(_table)
+    if _table == nil or _table == {} then
+        return
+    end
     local copy = _table
     local len = #copy
     local i = 1
@@ -861,6 +890,9 @@ end
 
 -- inserts item into table if not in table already
 function table.insertUnique(_table, _item)
+    if _table == nil or _table == {} then
+        return
+    end
     if table.contains(_table, _item) then
         return
     end
@@ -869,6 +901,9 @@ end
 
 -- returns the last element of a table
 function table.last(_table)
+    if _table == nil or _table == {} then
+        return
+    end
     if #_table < 1 then
         error('table empty', 2)
     end
@@ -877,6 +912,9 @@ end
 
 -- splits string by delimiter
 function string.split(_string, delimiter)
+    if type(_string) ~= "string" then
+        return
+    end
     delimiter = delimiter or '%S+'
     local output = {}
     for char in string.gmatch(_string, '%S+') do
@@ -886,6 +924,9 @@ function string.split(_string, delimiter)
 end
 
 function table.find(_table, _item)
+    if _table == nil or _table == {} then
+        return
+    end
     for i, item in ipairs(_table) do
         if item == _item then
             return item
@@ -895,5 +936,8 @@ function table.find(_table, _item)
 end
 
 function string.slice(string, n)
+    if type(string) ~= "string" then
+        return
+    end
     return string:sub(n, #string)
 end
