@@ -1,5 +1,7 @@
--- Zone Capture Mod for Trailmakers --
--- developed by dinoman, ticibi 2022 --
+-- Zone Capture Mod for Trailmakers, ticibi 2022
+-- name: Zone Capture
+-- author: Thomas Bresee
+-- description: zone capture minigame
 
 local debug = false
 local playerDataTable = {}
